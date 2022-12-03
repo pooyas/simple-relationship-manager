@@ -1,16 +1,14 @@
 /**
  * selects candidates to reach out this week, update the original spreadsheet, and send the name of the candidates to the specified email
+ * 
+ * @param {string} spreadsheetID ID of the spreadsheet
+ * @param {string} email email of the person who wants to receive the weekly selection
+ * @param {string} timezone timezone database name https://en.wikipedia.org/wiki/List_of_tz_database_time_zones e.g. America/Toronto
+ * @param {number} maxContactPerWeek maximum number of contacts to be selected in a week for reaching out
+ * 
+ * @return
  */
-function selectReachOutCandidates() {
-  // ID of the spreadsheet
-  const SPREADSHEET_ID = ScriptProperties.getProperty("SPREADSHEET_ID");
-  // email of the person who wants to receive the weekly selection
-  const EMAIL = ScriptProperties.getProperty("EMAIL");
-  // timezone database name https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-  // e.g. America/Toronto
-  const TIMEZONE = ScriptProperties.getProperty("TIMEZONE");
-  // maximum number of contacts to be selected in a week for reaching out
-  const MAX_CONTACT_PER_WEEK = ScriptProperties.getProperty("MAX_CONTACT_PER_WEEK");
+function selectReachOutCandidates(spreadsheetID, email, timezone, maxContactPerWeek) {
   // data range in the spreadsheet that contains contact information. It should have four columns:
   // contact Name | Category | Last Contacted | Last Selected
   // e.g. John Doe | B | 2022-09-08 | 2022-11-02 : John Doe is in category B. He was last contacted on 2022-09-08. Simple Relationship Manager selected him on 2022-11-02
@@ -34,7 +32,7 @@ function selectReachOutCandidates() {
     // using Sheets.Spreadsheets.Values.get trims trailing blank rows and columns
     // filtering data that have non-empty first two columns (name and category)
     // note: Google asks for permission to access Drive because of this line
-    const namesSheetContents = Sheets.Spreadsheets.Values.get(SPREADSHEET_ID, NAMES_SHEET_RANGE).values
+    const namesSheetContents = Sheets.Spreadsheets.Values.get(spreadsheetID, NAMES_SHEET_RANGE).values
       .filter(value => value.length >= 2)
       .filter(value => value[0] != '' && value[1] !='');
     
@@ -42,7 +40,7 @@ function selectReachOutCandidates() {
     // using Sheets.Spreadsheets.Values.get trims trailing blank rows and columns
     // filtering data that have non-empty first and third columns (name and frequency)
     // note: Google asks for permission to access Drive because of this line
-    const categoriesSheetContents = Sheets.Spreadsheets.Values.get(SPREADSHEET_ID, CATEGORIES_SHEET_RANGE).values
+    const categoriesSheetContents = Sheets.Spreadsheets.Values.get(spreadsheetID, CATEGORIES_SHEET_RANGE).values
       .filter(value => value.length == 3)
       .filter(value => value[0] != '' && value[2] !='');
     
@@ -51,9 +49,9 @@ function selectReachOutCandidates() {
     categoriesSheetContents.forEach(value => categoryToWeeksMap[value[0]] = +value[2]);
 
     // constant string to be appended to dates to create yyyy-MM-ddThh:mm:ss.SSSTZD
-    const timeAndTimeZoneString = 'T00:00:00.000' + getTimezoneOffset(TIMEZONE);
+    const timeAndTimeZoneString = 'T00:00:00.000' + getTimezoneOffset(timezone);
     // finding the contacts that are due to reach out
-    // select the contacts that don't have "Last Reached Out" value or the time from the last reached out until now is more than the specified frequency
+    // select the contacts that don't have "Last Reached On" value or the time from the last reached out until now is more than the specified frequency
     const contactDues = namesSheetContents.filter(value => value.length == 2 || value[2] == '' || new Date(value[2]+timeAndTimeZoneString).getTime() + +categoryToWeeksMap[value[1]]*WEEK_MILLIS < new Date().getTime());
     
     // if there is no one to contact this week, do nothing.
@@ -64,8 +62,8 @@ function selectReachOutCandidates() {
       
     // randomize the contacts that are due
     shuffleArray(contactDues);
-    // select the top MAC_CONTACT_PER_WEEK from the shuffled array
-    const selectedContactDues = contactDues.slice(0,Math.min(MAX_CONTACT_PER_WEEK,contactDues.length)).reduce(function(arr,obj) {
+    // select the top maxContactPerWeek from the shuffled array
+    const selectedContactDues = contactDues.slice(0,Math.min(maxContactPerWeek,contactDues.length)).reduce(function(arr,obj) {
       // only pick name from the row
       arr.push(obj[0]);
       return arr;
@@ -81,14 +79,14 @@ function selectReachOutCandidates() {
       if (value.length == 3)
         value.push('');
       
-      value[3] = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
+      value[3] = Utilities.formatDate(new Date(), timezone, 'yyyy-MM-dd');
     })
 
     // updating the spreadsheet with the "Last Selected On" field
     Sheets.Spreadsheets.Values.update({
       range: NAMES_SHEET_RANGE,
       values : namesSheetContents
-      }, SPREADSHEET_ID, NAMES_SHEET_RANGE, {valueInputOption: 'USER_ENTERED'});
+      }, spreadsheetID, NAMES_SHEET_RANGE, {valueInputOption: 'USER_ENTERED'});
 
     // generating a simple email body
     var emailBody = selectedContactDues.reduce(function(str,obj) {
@@ -97,7 +95,7 @@ function selectReachOutCandidates() {
 
     // sending email with the names of the individuals selected to contact this week
     // note: Google asks for permission to send email on your behalf because of this line 
-    MailApp.sendEmail(EMAIL, EMAIL_SUBJECT, emailBody);
+    MailApp.sendEmail(email, EMAIL_SUBJECT, emailBody);
 
   } catch (err) {
     Logger.log('Failed with error %s', err.message);
