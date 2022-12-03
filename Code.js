@@ -51,7 +51,7 @@ function selectReachOutCandidates(spreadsheetID, email, timezone, maxContactPerW
     // constant string to be appended to dates to create yyyy-MM-ddThh:mm:ss.SSSTZD
     const timeAndTimeZoneString = 'T00:00:00.000' + getTimezoneOffset(timezone);
     // finding the contacts that are due to reach out
-    // select the contacts that don't have "Last Reached On" value or the time from the last reached out until now is more than the specified frequency
+    // select the contacts that don't have "Last Contacted On" value or the time from the last reach out until now is more than the specified frequency
     const contactDues = namesSheetContents.filter(value => value.length == 2 || value[2] == '' || new Date(value[2]+timeAndTimeZoneString).getTime() + +categoryToWeeksMap[value[1]]*WEEK_MILLIS < new Date().getTime());
     
     // if there is no one to contact this week, do nothing.
