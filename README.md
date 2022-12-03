@@ -82,3 +82,6 @@ Select the time that is suitable for you and complete the trigger setup.
 Your Simple Relationship Manager is set up and you'll get notified automatically every time the script runs (e.g. weekly). 
 
 **Just remember, if you contacted the candidates, update the `Last Contacted On` column in the spreadsheet.**
+
+## Acknowledgement
+This work is inspired by this [article](https://jakobgreenfeld.com/stay-in-touch) from Jakob Greenfeld. His approach is using Airtable. If you are interested, you can check his work.
