@@ -47,9 +47,9 @@ Replace the placeholders with your preference. It should look something like thi
 SimpleRelationshipManager.selectReachOutCandidates('1GhOPluRsEyXQIOCWiDaFfHna99PAWi-8fgBofeIBPiM', 'your-email@gmail.com', 'America/Toronto', 5);
 ```
 #### Option 2: Embed the library in your code
-If you don't want the default values in the code or you want to test other things, you can copy/paste the content of [Code.gs](https://github.com/pooyas/simple-relationship-manager/blob/main/Code.js) in this repository in your project's `Code.gs` file. 
+If you don't want the default values in the code or you want to test other things, you can copy/paste the content of [Code.js](https://github.com/pooyas/simple-relationship-manager/blob/main/Code.js) in this repository in your project's `Code.gs` file. 
 
-Since `Code.gs` in this repository is meant to be deployed as a library, you need an extra function to call it. On top of your Code.gs file, add the following:
+Since `Code.js` in this repository is meant to be deployed as a library, you need an extra function to call it. On top of your Code.gs file, add the following:
 
 ```
 selectReachOutCandidates('[Your Google Sheet ID from the first step]', '[Your email]', '[Your timezone]', [Max number of contacts per week]);
